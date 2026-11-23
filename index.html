@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Funk Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#ffd23f;--panel:#fff8dc;--ink:#10282b;--muted:#3b5f62;--off:#ecdfae;--beat:#dccb8a;--on:#10282b;
+  --kick:#ff3b30;--snare:#ffc700;--clap:#ff3d8b;--hat:#10b5a5;--bass:#84cc16;--keys:#ff8a00;--lead:#2ea0ff;--gtr:#d9480f;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#062b2f;--panel:#0d4146;--ink:#fff1c9;--muted:#9fd6d0;--off:#17595e;--beat:#25777c;--hat:#2fe0cf;--gtr:#ff8a4c;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#062b2f;--panel:#0d4146;--ink:#fff1c9;--muted:#9fd6d0;--off:#17595e;--beat:#25777c;--hat:#2fe0cf;--gtr:#ff8a4c;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);background-image:radial-gradient(circle,rgba(0,0,0,.14) 1.6px,transparent 1.8px);background-size:20px 20px;color:var(--ink);font-family:"Outfit",system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center;padding:22px 12px 40px}
+main{width:100%;max-width:1040px}
+h1{font-family:"Bowlby One","Arial Black",Impact,sans-serif;font-weight:400;font-size:clamp(44px,9vw,92px);line-height:.95;letter-spacing:.01em;margin:6px 0 14px;color:var(--kick);transform:rotate(-1.5deg);transform-origin:left center;text-shadow:3px 3px 0 var(--snare),6px 6px 0 var(--clap),9px 9px 0 var(--ink)}
+.sub{color:var(--ink);font-weight:500;font-size:17px;margin:0 0 14px;max-width:58ch}
+.stripes{height:20px;border:3px solid var(--ink);border-radius:999px;margin:0 0 18px;background:linear-gradient(to bottom,var(--kick) 0 33.3%,var(--snare) 33.3% 66.6%,var(--hat) 66.6% 100%)}
+.bar{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end;background:var(--panel);border:3px solid var(--ink);border-radius:18px;box-shadow:5px 5px 0 var(--ink);padding:14px 16px;margin-bottom:16px}
+button,select{font:inherit;color:var(--ink)}
+.btn{border:3px solid var(--ink);border-radius:12px;padding:7px 14px;font-weight:800;cursor:pointer;background:var(--panel);box-shadow:3px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:hover{background:var(--snare);color:#10282b}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn[aria-pressed="true"]{background:var(--snare);color:#10282b}
+.btn:focus-visible,select:focus-visible,input:focus-visible,.cell:focus-visible{outline:3px solid var(--lead);outline-offset:2px}
+#play{background:var(--kick);color:#fff;min-width:104px;font-size:20px;padding:9px 18px}
+#play:hover{background:var(--clap);color:#fff}
+.tabs .btn.playing::after{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--kick);border:2px solid var(--ink);margin-left:7px}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:700}
+label b{color:var(--ink)}
+.chk{flex-direction:row;align-items:center;gap:6px;color:var(--ink);padding-bottom:10px}
+input[type=range]{width:130px;accent-color:var(--kick)}
+input[type=checkbox]{accent-color:var(--kick);width:18px;height:18px}
+select{background:var(--panel);border:3px solid var(--ink);border-radius:10px;padding:7px 9px;font-weight:700}
+.sp{flex:1}
+.board{background:var(--panel);border:3px solid var(--ink);border-radius:18px;box-shadow:6px 6px 0 var(--ink);padding:14px;overflow-x:auto}
+.grid{min-width:700px;display:grid;grid-template-columns:92px repeat(16,1fr);gap:4px;align-items:center;user-select:none;touch-action:none}
+.name{font-weight:800;font-size:13px;color:var(--ink)}
+.cell{height:30px;border:2px solid var(--ink);border-radius:8px;background:var(--off);cursor:pointer;padding:0}
+.cell.beat{background:var(--beat)}
+.cell.on{background:var(--c);box-shadow:inset 0 -4px 0 rgba(0,0,0,.25)}
+.cell.now{outline:3px solid var(--ink);outline-offset:1px;transform:translateY(-2px)}
+.gh{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:800;font-size:15px}
+.gh:first-child{margin-top:0}
+.gh span{background:var(--c);color:#10282b;border:3px solid var(--ink);border-radius:999px;padding:1px 14px;transform:rotate(-1.5deg);box-shadow:2px 2px 0 var(--ink)}
+.gh i{display:none}
+.gh input{width:110px}
+.gh .btn{padding:1px 10px;font-size:12px;box-shadow:2px 2px 0 var(--ink)}
+.tabs{display:flex;gap:8px}
+.foot{color:var(--ink);font-weight:500;font-size:14px;margin-top:14px}
+@media (prefers-reduced-motion:reduce){.btn,.cell{transition:none}.cell.now{transform:none}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Funk Lab</h1>
+  <div class="stripes" aria-hidden="true"></div>
+  <p class="sub">Build slow, swung West Coast funk: boom-bap drums, a rolling bassline, Rhodes stabs and a gliding whine lead. Two bars, four mixer groups.</p>
+
+  <div class="bar">
+    <button class="btn" id="play" aria-label="Play or stop">Play</button>
+    <label>Tempo <b id="bpmv">94 BPM</b><input type="range" id="bpm" min="60" max="150" value="94"></label>
+    <label>Swing <b id="swv">28%</b><input type="range" id="swing" min="0" max="60" value="28"></label>
+    <label>Key (minor)<select id="key"></select></label>
+    <label>Chords<select id="prog"></select></label>
+    <label>Bass sound<select id="bt"><option value="funk">Funk pluck</option><option value="808">808 sub</option></select></label>
+    <label>Echo <input type="range" id="echo" min="0" max="60" value="25"></label>
+    <label class="chk"><input type="checkbox" id="vinyl"> Vinyl crackle</label>
+  </div>
+  <div class="bar">
+    <label>Pattern<select id="preset"></select></label>
+    <div class="tabs" role="group" aria-label="Edit bar">
+      <button class="btn" id="t0" aria-pressed="true">Bar 1</button>
+      <button class="btn" id="t1" aria-pressed="false">Bar 2</button>
+    </div>
+    <button class="btn" id="copy">Copy to other bar</button>
+    <span class="sp"></span>
+    <button class="btn" id="fill">Add fill</button>
+    <button class="btn" id="mix">Remix</button>
+    <button class="btn" id="rand">Randomize</button>
+    <button class="btn" id="clear">Clear</button>
+  </div>
+
+  <div class="board"><div class="grid" id="grid" role="grid" aria-label="Step sequencer"></div></div>
+  <p class="foot">Space starts and stops. Chord stabs follow the progression: each chord lasts half a bar. Lead notes glide into each other like a talk-box synth.</p>
+</main>
+
+<script>
+(function(){
+var STEPS=16, NOTE=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function nm(m){return NOTE[m%12]+(Math.floor(m/12)-1)}
+var $=function(id){return document.getElementById(id)};
+var key=7, editBar=0;
+var BASS_OFF=[12,10,7,5,3,0], LEAD_OFF=[19,17,15,12,10,7];
+function bassBase(){return 36+key-(key>5?12:0)}
+function leadBase(){return 55+key}
+function gBase(){return 52+key}
+
+var CH={i9:[0,[0,3,7,10,14]],iv9:[5,[0,3,7,10,14]],bVI:[8,[0,4,7,11]],bVII:[10,[0,4,7,10]],v7:[7,[0,3,7,10]]};
+var PROGS=[
+ {n:'i · iv · i · bVII',c:['i9','iv9','i9','bVII']},
+ {n:'i · bVI · iv · v',c:['i9','bVI','iv9','v7']},
+ {n:'i · i · bVI · bVII',c:['i9','i9','bVI','bVII']},
+ {n:'i · bVII · bVI · bVII',c:['i9','bVII','bVI','bVII']},
+ {n:'iv · v · i · i',c:['iv9','v7','i9','i9']}];
+var prog=0;
+
+var G=[
+ {id:'drums',name:'Drums',color:'--kick',vol:85,rows:[['kick','Kick','--kick'],['snare','Snare','--snare'],['clap','Clap','--clap'],['hat','Hi-hat','--hat'],['ohat','Open hat','--hat'],['shk','Shaker','--keys'],['cga','Conga','--bass'],['cow','Cowbell','--snare']]},
+ {id:'bass',name:'Bass',color:'--bass',vol:80,rows:BASS_OFF.map(function(o,i){return ['b'+i,'', '--bass',o]})},
+ {id:'keys',name:'Keys',color:'--keys',vol:60,rows:[['keys','Chord stab','--keys']]},
+ {id:'guitar',name:'Guitar',color:'--gtr',vol:65,rows:[['gsc','Scratch','--gtr'],['gch','Wah chord','--gtr'],['g0','','--gtr',15],['g1','','--gtr',12],['g2','','--gtr',10],['g3','','--gtr',7]]},
+ {id:'lead',name:'Lead',color:'--lead',vol:50,rows:LEAD_OFF.map(function(o,i){return ['l'+i,'','--lead',o]})}
+];
+var pattern={}, rowEl={}, cells={}, labels={}, grpOf={}, offOf={};
+G.forEach(function(g){g.mute=false;g.rows.forEach(function(r){pattern[r[0]]=[new Array(16).fill(false),new Array(16).fill(false)];grpOf[r[0]]=g.id;offOf[r[0]]=r[3]})});
+
+// ----- build grid -----
+var grid=$('grid');
+G.forEach(function(g){
+  var h=document.createElement('div');h.className='gh';h.style.setProperty('--c','var('+g.color+')');
+  h.innerHTML='<i></i><span>'+g.name+'</span>';
+  var v=document.createElement('input');v.type='range';v.min=0;v.max=100;v.value=g.vol;v.setAttribute('aria-label',g.name+' volume');
+  v.oninput=function(){g.vol=+v.value;applyG(g)};
+  var m=document.createElement('button');m.className='btn';m.textContent='Mute';m.setAttribute('aria-pressed','false');
+  m.onclick=function(){g.mute=!g.mute;m.setAttribute('aria-pressed',g.mute);applyG(g)};
+  h.appendChild(v);h.appendChild(m);grid.appendChild(h);
+  g.rows.forEach(function(r){
+    var n=document.createElement('div');n.className='name';grid.appendChild(n);labels[r[0]]=n;n.textContent=r[1];
+    cells[r[0]]=[];
+    for(var s=0;s<STEPS;s++){
+      var b=document.createElement('button');b.className='cell'+(s%4===0?' beat':'');
+      b.style.setProperty('--c','var('+r[2]+')');b.dataset.row=r[0];b.dataset.step=s;
+      b.setAttribute('aria-label',(r[1]||r[0])+' step '+(s+1));b.setAttribute('aria-pressed','false');
+      grid.appendChild(b);cells[r[0]].push(b);
+    }
+  });
+});
+function names(){
+  G.forEach(function(g){g.rows.forEach(function(r){
+    if(r[3]!==undefined) labels[r[0]].textContent=nm((g.id==='bass'?bassBase():g.id==='guitar'?gBase():leadBase())+r[3]);
+  })});
+}
+function paint(){
+  Object.keys(cells).forEach(function(id){cells[id].forEach(function(c,s){
+    var on=pattern[id][editBar][s];c.classList.toggle('on',on);c.setAttribute('aria-pressed',on);
+  })});
+}
+
+// pointer painting
+var painting=null,lastEl=null;
+function apply(el){
+  if(!el||!el.dataset||el.dataset.row===undefined||el===lastEl)return;
+  lastEl=el;var id=el.dataset.row,s=+el.dataset.step;
+  if(painting===null)painting=!pattern[id][editBar][s];
+  pattern[id][editBar][s]=painting;el.classList.toggle('on',painting);el.setAttribute('aria-pressed',painting);
+  if(painting)preview(id,s);
+}
+grid.addEventListener('pointerdown',function(e){ensureAudio();painting=null;lastEl=null;apply(e.target.closest('.cell'))});
+grid.addEventListener('pointermove',function(e){if(painting!==null)apply(document.elementFromPoint(e.clientX,e.clientY))});
+window.addEventListener('pointerup',function(){painting=null;lastEl=null});
+
+// ----- audio -----
+var ctx,master,noiseBuf,gg={},echoIn,delay,vinylSrc,lv=null;
+function stepDur(){return 60/$('bpm').value/4}
+function applyG(g){if(gg[g.id])gg[g.id].gain.value=g.mute?0:g.vol/100}
+function ensureAudio(){
+  if(!ctx){
+    ctx=new (window.AudioContext||window.webkitAudioContext)();
+    master=ctx.createGain();master.gain.value=0.8;
+    var comp=ctx.createDynamicsCompressor();master.connect(comp);comp.connect(ctx.destination);
+    noiseBuf=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate);
+    var d=noiseBuf.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+    G.forEach(function(g){gg[g.id]=ctx.createGain();gg[g.id].connect(master);applyG(g)});
+    echoIn=ctx.createGain();echoIn.gain.value=$('echo').value/100;
+    delay=ctx.createDelay(2);var fb=ctx.createGain();fb.gain.value=0.4;
+    var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2800;
+    echoIn.connect(delay);delay.connect(lp);lp.connect(fb);fb.connect(delay);lp.connect(master);
+    setDelay();
+  }
+  if(ctx.state==='suspended')ctx.resume();
+}
+function setDelay(){if(delay)delay.delayTime.value=stepDur()*3}
+function env(g,t,peak,dur){g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+0.004);g.gain.exponentialRampToValueAtTime(0.0001,t+dur)}
+function noise(t,dur,type,freq,peak,q){
+  var s=ctx.createBufferSource();s.buffer=noiseBuf;
+  var f=ctx.createBiquadFilter();f.type=type;f.frequency.value=freq;if(q)f.Q.value=q;
+  var g=ctx.createGain();env(g,t,peak,dur);s.connect(f);f.connect(g);g.connect(gg.drums);s.start(t);s.stop(t+dur+0.03);
+}
+function tone(type,freq,t,dur,peak,dest,sweepTo,sweepT){
+  var o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);
+  if(sweepTo)o.frequency.exponentialRampToValueAtTime(sweepTo,t+sweepT);
+  env(g,t,peak,dur);o.connect(g);g.connect(dest);o.start(t);o.stop(t+dur+0.05);
+}
+var drums={
+  kick:function(t,v){tone('sine',130,t,0.55,1*v,gg.drums,38,0.14);noise(t,0.012,'lowpass',3500,0.35*v)},
+  snare:function(t,v){noise(t,0.2,'highpass',1700,0.7*v);tone('triangle',230,t,0.12,0.45*v,gg.drums,140,0.08)},
+  clap:function(t,v){[0,0.011,0.022].forEach(function(d){noise(t+d,0.05,'bandpass',1500,0.55*v,1.2)});noise(t+0.034,0.18,'bandpass',1500,0.45*v,1.2)},
+  hat:function(t,v){noise(t,0.05,'highpass',7500,0.32*v)},
+  ohat:function(t,v){noise(t,0.28,'highpass',7000,0.28*v)},
+  shk:function(t,v){noise(t,0.07,'bandpass',6500,0.22*v,0.8)},
+  cga:function(t,v){tone('sine',330,t,0.22,0.6*v,gg.drums,210,0.09)},
+  cow:function(t,v){[540,810].forEach(function(f){var o=ctx.createOscillator(),g=ctx.createGain(),b=ctx.createBiquadFilter();o.type='square';o.frequency.value=f;b.type='bandpass';b.frequency.value=700;env(g,t,0.16*v,0.22);o.connect(b);b.connect(g);g.connect(gg.drums);o.start(t);o.stop(t+0.26)})}
+};
+function bass(m,t){
+  var f=440*Math.pow(2,(m-69)/12),d=stepDur()*2.4;
+  if($('bt').value==='808'){tone('sine',f*1.5,t,stepDur()*5,0.9,gg.bass,f,0.06);return}
+  var o=ctx.createOscillator(),lp=ctx.createBiquadFilter(),g=ctx.createGain();
+  o.type='sawtooth';o.frequency.value=f;lp.type='lowpass';lp.Q.value=7;
+  lp.frequency.setValueAtTime(1100,t);lp.frequency.exponentialRampToValueAtTime(150,t+0.16);
+  env(g,t,0.5,d);o.connect(lp);lp.connect(g);g.connect(gg.bass);o.start(t);o.stop(t+d+0.05);
+  tone('sine',f,t,d,0.6,gg.bass);
+}
+function chordNotes(bar,s){
+  var c=CH[PROGS[prog].c[bar*2+(s>=8?1:0)]],base=48+key+c[0];if(base>57)base-=12;
+  return c[1].map(function(i){return base+i});
+}
+function keys(bar,s,t){
+  chordNotes(bar,s).forEach(function(m,i){
+    var f=440*Math.pow(2,(m-69)/12),tt=t+i*0.006;
+    var o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f;
+    env(g,tt,0.11,0.9);o.connect(g);g.connect(gg.keys);g.connect(echoIn);o.start(tt);o.stop(tt+0.95);
+    var b=ctx.createOscillator(),bg=ctx.createGain();b.type='sine';b.frequency.value=f*4;
+    env(bg,tt,0.035,0.14);b.connect(bg);bg.connect(gg.keys);b.start(tt);b.stop(tt+0.2);
+  });
+}
+function lead(m,t){
+  var fr=440*Math.pow(2,(m-69)/12),dur=stepDur()*3;
+  var from=(lv&&t-lv.t<0.6)?lv.f:fr*0.96;
+  if(lv){lv.g.gain.cancelScheduledValues(t);lv.g.gain.setTargetAtTime(0.0001,t,0.025);try{lv.o.stop(t+0.15);lv.l.stop(t+0.15)}catch(e){}}
+  var o=ctx.createOscillator(),lfo=ctx.createOscillator(),lg=ctx.createGain(),f=ctx.createBiquadFilter(),g=ctx.createGain();
+  o.type='sawtooth';o.frequency.setValueAtTime(from,t);o.frequency.exponentialRampToValueAtTime(fr,t+0.07);
+  lfo.frequency.value=5.5;lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(fr*0.012,t+0.3);
+  lfo.connect(lg);lg.connect(o.frequency);
+  f.type='lowpass';f.frequency.value=1700;f.Q.value=3;
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.16,t+0.015);
+  g.gain.setValueAtTime(0.16,t+dur);g.gain.exponentialRampToValueAtTime(0.0001,t+dur+0.12);
+  o.connect(f);f.connect(g);g.connect(gg.lead);g.connect(echoIn);
+  o.start(t);lfo.start(t);o.stop(t+dur+0.15);lfo.stop(t+dur+0.15);
+  lv={o:o,l:lfo,g:g,f:fr,t:t};
+}
+function gscratch(bar,s,t,v){
+  var ns=chordNotes(bar,s).slice(1,4),f=ctx.createBiquadFilter(),g=ctx.createGain();
+  f.type='bandpass';f.frequency.value=2300;f.Q.value=2;env(g,t,0.2*v,0.06);f.connect(g);g.connect(gg.guitar);
+  ns.forEach(function(m){var o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=440*Math.pow(2,(m+12-69)/12);o.connect(f);o.start(t);o.stop(t+0.08)});
+  var n=ctx.createBufferSource();n.buffer=noiseBuf;n.connect(f);n.start(t);n.stop(t+0.05);
+}
+function gchord(bar,s,t){
+  var ns=chordNotes(bar,s).slice(0,4),d=stepDur()*1.8,f=ctx.createBiquadFilter(),g=ctx.createGain();
+  f.type='bandpass';f.Q.value=5;f.frequency.setValueAtTime(450,t);f.frequency.exponentialRampToValueAtTime(2300,t+0.07);f.frequency.exponentialRampToValueAtTime(650,t+d);
+  env(g,t,0.24,d);f.connect(g);g.connect(gg.guitar);g.connect(echoIn);
+  ns.forEach(function(m,i){var o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=440*Math.pow(2,(m+12-69)/12);o.detune.value=(i-1.5)*4;o.connect(f);o.start(t+i*0.008);o.stop(t+d+0.05)});
+}
+function glick(m,t){
+  var fr=440*Math.pow(2,(m-69)/12),d=stepDur()*2.2,o=ctx.createOscillator(),f=ctx.createBiquadFilter(),g=ctx.createGain();
+  o.type='sawtooth';o.frequency.setValueAtTime(fr*0.97,t);o.frequency.exponentialRampToValueAtTime(fr,t+0.04);
+  f.type='lowpass';f.Q.value=2;f.frequency.setValueAtTime(3000,t);f.frequency.exponentialRampToValueAtTime(900,t+d);
+  env(g,t,0.22,d);o.connect(f);f.connect(g);g.connect(gg.guitar);g.connect(echoIn);o.start(t);o.stop(t+d+0.05);
+}
+function play(id,bar,s,t){
+  var v=0.8+Math.random()*0.2,o=offOf[id];
+  if(drums[id])return drums[id](t,id==='hat'&&s%2?v*0.75:v);
+  if(id==='keys')return keys(bar,s,t);
+  if(id==='gsc')return gscratch(bar,s,t,v);if(id==='gch')return gchord(bar,s,t);if(id[0]==='g')return glick(gBase()+o,t);
+  if(id[0]==='b')return bass(bassBase()+o,t);
+  lead(leadBase()+o,t);
+}
+function preview(id,s){ensureAudio();play(id,editBar,s,ctx.currentTime+0.01)}
+
+// vinyl crackle
+$('vinyl').onchange=function(){
+  if(this.checked){
+    ensureAudio();
+    var n=ctx.sampleRate*3,b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0),i,p;
+    for(i=0;i<n;i++)d[i]=(Math.random()*2-1)*0.03;
+    for(i=0;i<16;i++){p=Math.floor(Math.random()*(n-2));d[p]=(Math.random()<.5?-1:1)*(0.3+Math.random()*0.5);d[p+1]=-d[p]*0.5}
+    vinylSrc=ctx.createBufferSource();vinylSrc.buffer=b;vinylSrc.loop=true;
+    var hp=ctx.createBiquadFilter();hp.type='highpass';hp.frequency.value=500;var vg=ctx.createGain();vg.gain.value=0.5;
+    vinylSrc.connect(hp);hp.connect(vg);vg.connect(master);vinylSrc.start();
+  }else if(vinylSrc){vinylSrc.stop();vinylSrc=null}
+};
+
+// ----- transport -----
+var playing=false,pos=0,nextTime=0,timer=null,queue=[],lastShown=null;
+function schedule(){
+  while(nextTime<ctx.currentTime+0.12){
+    var bar=pos>>4,s=pos&15;
+    var sw=(s%2===1)?($('swing').value/100)*stepDur()*0.66:0,t=nextTime+sw;
+    Object.keys(pattern).forEach(function(id){if(pattern[id][bar][s])play(id,bar,s,t)});
+    queue.push({bar:bar,s:s,time:t});
+    nextTime+=stepDur();pos=(pos+1)%32;
+  }
+}
+function clearNow(){
+  Object.keys(cells).forEach(function(id){cells[id].forEach(function(c){c.classList.remove('now')})});
+  $('t0').classList.remove('playing');$('t1').classList.remove('playing');
+}
+function draw(){
+  if(!playing)return;
+  while(queue.length&&queue[0].time<=ctx.currentTime){
+    var q=queue.shift();clearNow();
+    $('t'+q.bar).classList.add('playing');
+    if(q.bar===editBar)Object.keys(cells).forEach(function(id){cells[id][q.s].classList.add('now')});
+    lastShown=q;
+  }
+  requestAnimationFrame(draw);
+}
+function start(){
+  ensureAudio();playing=true;pos=0;queue=[];lv=null;nextTime=ctx.currentTime+0.06;
+  $('play').textContent='Stop';timer=setInterval(schedule,25);schedule();requestAnimationFrame(draw);
+}
+function stop(){playing=false;clearInterval(timer);$('play').textContent='Play';clearNow()}
+$('play').onclick=function(){playing?stop():start()};
+window.addEventListener('keydown',function(e){
+  if(e.code==='Space'&&!/SELECT|INPUT|BUTTON/.test(document.activeElement.tagName)){e.preventDefault();playing?stop():start()}
+});
+
+// ----- controls -----
+$('bpm').oninput=function(){$('bpmv').textContent=this.value+' BPM';setDelay()};
+$('swing').oninput=function(){$('swv').textContent=this.value+'%'};
+$('echo').oninput=function(){if(echoIn)echoIn.gain.value=this.value/100};
+NOTE.forEach(function(n,i){var o=document.createElement('option');o.value=i;o.textContent=n+' minor';if(i===7)o.selected=true;$('key').appendChild(o)});
+PROGS.forEach(function(p,i){var o=document.createElement('option');o.value=i;o.textContent=p.n;$('prog').appendChild(o)});
+$('key').onchange=function(){key=+this.value;names()};
+$('prog').onchange=function(){prog=+this.value};
+function setBar(b){editBar=b;$('t0').setAttribute('aria-pressed',b===0);$('t1').setAttribute('aria-pressed',b===1);paint()}
+$('t0').onclick=function(){setBar(0)};$('t1').onclick=function(){setBar(1)};
+$('copy').onclick=function(){Object.keys(pattern).forEach(function(id){pattern[id][1-editBar]=pattern[id][editBar].slice()})};
+$('clear').onclick=function(){Object.keys(pattern).forEach(function(id){pattern[id]=[new Array(16).fill(false),new Array(16).fill(false)]});paint()};
+$('rand').onclick=function(){
+  var P={kick:.22,snare:.1,clap:.06,hat:.55,ohat:.1,keys:.28,b0:.05,b1:.07,b2:.08,b3:.06,b4:.07,b5:.2,l0:.03,l1:.04,l2:.05,l3:.06,l4:.04,l5:.03,gsc:.35,gch:.1,g0:.04,g1:.05,g2:.05,g3:.04};
+  Object.keys(pattern).forEach(function(id){for(var b=0;b<2;b++)for(var s=0;s<16;s++)pattern[id][b][s]=Math.random()<P[id]});
+  for(var b=0;b<2;b++){pattern.kick[b][0]=true;pattern.snare[b][4]=pattern.snare[b][12]=true;pattern.b5[b][0]=true}
+  paint();
+};
+
+$('fill').onclick=function(){
+  [['snare',[12,13,14,15]],['kick',[11,15]],['cga',[13,14,15]],['clap',[15]]].forEach(function(a){a[1].forEach(function(s){pattern[a[0]][1][s]=true})});
+  setBar(1);
+};
+$('mix').onclick=function(){
+  var ids=['hat','ohat','shk','cga','cow','keys','gsc','g0','g1','g2','g3','b0','b1','b2','b3','b4','l0','l1','l2','l3','l4','l5'];
+  for(var i=0;i<7;i++){var id=ids[Math.floor(Math.random()*ids.length)],b=Math.floor(Math.random()*2),s=Math.floor(Math.random()*16);pattern[id][b][s]=!pattern[id][b][s]}
+  paint();
+};
+// ----- presets -----
+var E='................';
+var PRESETS={
+ 'Cruise (G-funk)':{bpm:94,swing:28,key:7,prog:0,r:{gsc:'x.xx.xx.x.xx.xx.',gch:['....x.......x...','....x.......x..x'],g2:['........x.......',E],
+  kick:['x..x....x.x.....','x.....x.x..x....'],snare:['....x.......x...','....x.......x..x'],clap:['....x.......x...','....x.......x...'],
+  hat:['x.xxx.x.x.xxx.x.','x.x.x.xxx.x.x.xx'],ohat:['......x.......x.','......x.........'],
+  b0:[E,'...............x'],b1:['......x.........','..........x.....'],b2:['...........x....','.............x..'],b3:[E,'......x.........'],b4:[E,'...........x....'],b5:['x..x....x.......','x..x....x.......'],
+  keys:['x.....x...x.....','x.....x...x..x..'],
+  l0:[E,'x...............'],l1:[E,'....x...........'],l2:['..........x.....','......x.........'],l3:['........x...x...',E],l4:[E,'............x...'],l5:[E,E]}},
+ 'Funk shuffle':{bpm:106,swing:38,key:4,prog:1,r:{gsc:'xxx.xx.xxxx.xx.x',gch:'..x.......x.....',
+  kick:['x.....x...x.....','x...x.....x..x..'],snare:['....x.......x...','....x..x....x...'],clap:[E,'....x.......x...'],
+  hat:['xxxxxxxxxxxxxxxx','xxxxxxxxxxxxxxxx'],ohat:['..x.......x.....','..x.......x...x.'],
+  b0:['..........x.....',E],b1:[E,'......x.........'],b2:['.....x..........','.........x......'],b3:['x.....x.........','..x.............'],b4:[E,E],b5:['x.....x...x.....','x.....x...x..x..'],
+  keys:['..x...x...x.x...','..x.....x.x...x.'],
+  l0:[E,E],l1:['x...............',E],l2:['....x...........',E],l3:['........x.......',E],l4:[E,'x.......x.......'],l5:[E,'....x...........']}},
+ 'Boom bap':{bpm:88,swing:18,key:2,prog:2,r:{gch:['....x...........','........x...x...'],g1:['..............x.',E],
+  kick:['x.....x.x.......','x.......x.x.....'],snare:'....x.......x...',hat:['x.x.x.x.x.x.x.x.','x.x.x.x.x.x.xxx.'],ohat:['..............x.',E],
+  b5:['x.....x.x.......','x.......x.......'],b2:['..........x.....','..........x.x...'],b1:[E,'..............x.'],
+  keys:['x.......x.......','x.....x.x.......'],l3:['............x...',E],l2:[E,'....x...x.......'],l4:[E,'............x...']}},
+ 'Disco funk':{bpm:116,swing:8,key:9,prog:3,r:{gsc:'xx.xx.xx.xx.xx.x',
+  kick:'x...x...x...x...',clap:'....x.......x...',shk:'xxxxxxxxxxxxxxxx',ohat:'..x...x...x...x.',
+  b5:'x...x...x...x...',b0:['..x...x...x...x.','..x...x...x.....'],b2:[E,'..............x.'],
+  keys:['..x..x..x..x..x.','..x..x..x..x....'],l3:['............x...',E],l1:[E,'........x.......']}},
+ 'Boogie talk-box':{bpm:100,swing:22,key:5,prog:0,r:{gsc:'x.x.xx.x.xx.x.x.',g1:['..........x.....','......x.......x.'],
+  kick:['x..x..x.x.......','x..x..x.x.x.....'],snare:['....x..x....x...','....x.......x..x'],clap:'....x.......x...',hat:'x.x.x.x.x.x.x.x.',ohat:'......x.......x.',
+  b5:['x..x..x.....x...','x..x....x..x..x.'],b1:[E,'......x.........'],b2:['..........x.....',E],
+  keys:['x..x..x...x.....','x..x..x...x..x..'],l3:['........x.......',E],l2:['..........x.....','......x.........'],l1:[E,'............x...']}},
+ 'Slow jam (808)':{bpm:72,swing:10,key:0,prog:1,bt:'808',r:{gch:['x...............','........x.......'],g0:[E,'............x...'],g2:['....x...........',E],
+  kick:['x.........x.....','x......x..x.....'],snare:'........x.......',clap:'........x.......',
+  hat:['x.x.x.xxx.x.x.xx','x.x.x.x.xxxx.x.x'],b5:['x.........x.....','x......x..x.....'],b4:['..............x.',E],b2:[E,'..............x.'],
+  keys:['x.......x.......','x.......x...x...'],l3:['....x...........','........x.......'],l2:[E,'............x...']}},
+ 'Latin funk':{bpm:102,swing:15,key:7,prog:0,r:{gsc:'x.xx.xx.x.xx.xx.',
+  kick:['x..x..x...x.....','x..x....x.x.....'],snare:'....x.......x...',ohat:['..x.......x.....','..x.......x...x.'],
+  cga:['..x.xx..x.x.xx..','x..xx.x.x.x..xx.'],cow:'x..x..x...x.x...',shk:'x.x.x.x.x.x.x.x.',
+  b5:['x..x..x.........','x..x..x...x.....'],b2:['..........x..x..',E],b1:[E,'...........x....'],
+  keys:['..x..x..x..x....','..x..x..x..x..x.'],l2:['........x.......','....x...........'],l3:[E,'........x.x.....']}},
+ 'Funky break':{bpm:98,swing:20,key:4,prog:2,r:{gsc:'xx.x.xx.xx.x.xx.',gch:'......x.......x.',
+  kick:['x.x.......x...x.','x.x.......x..x..'],snare:['....x..x.x..x...','....x..x.x..x..x'],hat:'xxxxxxxxxxxxxxxx',ohat:['......x.........','..........x...x.'],
+  b5:['x.x.......x...x.','x.x.......x..x..'],b1:['.....x..........',E],b2:[E,'............x...'],
+  keys:['..x....x..x.....','..x....x..x...x.'],l4:['............x...',E],l3:[E,'....x...........']}}
+};
+Object.keys(PRESETS).forEach(function(n){var o=document.createElement('option');o.textContent=n;$('preset').appendChild(o)});
+function load(n){
+  var p=PRESETS[n];
+  Object.keys(pattern).forEach(function(id){
+    var rr=p.r[id]||[E,E];if(typeof rr==='string')rr=[rr,rr];pattern[id]=rr.map(function(str){return str.split('').map(function(c){return c==='x'})});
+  });
+  $('bpm').value=p.bpm;$('bpm').oninput();$('swing').value=p.swing;$('swing').oninput();
+  $('bt').value=p.bt||'funk';key=p.key;$('key').value=key;prog=p.prog;$('prog').value=prog;names();paint();
+}
+$('preset').onchange=function(){load(this.value)};
+names();load('Cruise (G-funk)');
+})();
+</script>
+</body>
+</html>
